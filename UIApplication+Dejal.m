@@ -39,24 +39,35 @@
 #import "UIApplication+Dejal.h"
 
 
-@protocol DejalApplication <NSObject>
-
-- (id)firstResponder;
-
-@end
-
-
 @implementation UIApplication (Dejal)
 
+static __weak id dejal_currentFirstResponder;
+
 /**
- Returns the first responder view for the application's key window.  Uses a private -firstResponder method.
+ Returns the first responder view for the application's key window.
  
  @author MG 2009-04; tweaked by DJS 2009-07.
+ @version DJS 2015-03: changed to avoid using a private method.
 */
 
 + (UIView *)dejal_firstResponder;
 {
-    return [[[self sharedApplication] keyWindow] performSelector:@selector(firstResponder)];
+    dejal_currentFirstResponder = nil;
+    
+    [[UIApplication sharedApplication] sendAction:@selector(dejal_findCurrentFirstResponder:) to:nil from:nil forEvent:nil];
+    
+    return dejal_currentFirstResponder;
+}
+
+/**
+ Helper for the +dejal_firstResponder method.  Call that instead.
+ 
+ @author DJS 2015-03.
+ */
+
+-(void)dejal_findCurrentFirstResponder:(id)sender;
+{
+    dejal_currentFirstResponder = self;
 }
 
 /**
